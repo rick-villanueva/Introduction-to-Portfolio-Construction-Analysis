@@ -253,7 +253,16 @@ def msr(riskfree_rate, er, cov):
                       )
     return results.x
 
-def plot_ef(n_points, er, cov, show_cml=False, style=".-", riskfree_rate=0):
+def gmv(cov):
+    """
+    Returns the weights of the Global Minimum Vol portfolio
+    given the covariance matrix
+    """
+    n = cov.shape[0]
+    return msr(0, np.repeat(1,n), cov)
+    
+    
+def plot_ef(n_points, er, cov, show_cml=False, style=".-", riskfree_rate=0, show_ew=False, show_gmv=False):
     """
     Plots the N-asset efficient frontier
     """
@@ -265,6 +274,25 @@ def plot_ef(n_points, er, cov, show_cml=False, style=".-", riskfree_rate=0):
         "Volatility": vols
         })
     ax = ef.plot.line(x="Volatility", y="Returns", style=style)
+    if show_ew:
+        """
+        Shows the equally weighted portfolio in the graph
+        """
+        n = er.shape[0]
+        w_ew = np.repeat(1/n,n)
+        r_ew = portfolio_return(w_ew, er)
+        vol_ew = portfolio_vol(w_ew, cov)
+        #Display EW
+        ax.plot([vol_ew], [r_ew], color="goldenrod", marker="o", markersize=10)
+    if show_gmv:
+        """
+        Shows the global minimum variance portfolio which does not need a return estimate
+        """
+        w_gmv = gmv(cov)
+        r_gmv = portfolio_return(w_gmv, er)
+        vol_gmv = portfolio_vol(w_gmv, cov)
+        #Display EW
+        ax.plot([vol_gmv], [r_gmv], color="midnightblue", marker="o", markersize=10)
     if show_cml:
         ax.set_xlim(left = 0)
         w_msr = msr(riskfree_rate, er, cov)
@@ -276,3 +304,4 @@ def plot_ef(n_points, er, cov, show_cml=False, style=".-", riskfree_rate=0):
         ax.plot(cml_x, cml_y, color="green", marker="o", linestyle="dashed", markersize=12, linewidth=2)
         
     return ax
+
