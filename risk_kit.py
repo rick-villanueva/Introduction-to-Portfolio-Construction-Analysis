@@ -443,3 +443,24 @@ def gbm(n_years = 10, n_scenarios=1000, mu=0.07, sigma=0.15, steps_per_year=12, 
     rets_plus_1[0] = 1
     ret_val = s_0*pd.DataFrame(rets_plus_1).cumprod() if prices else rets_plus_1-1
     return ret_val
+
+def discount(t, r):
+    """
+    Compute the price of a pure discount bond that pays a dollar at time t where t is in years and r is the annual interest rate
+    """
+    return (1+r)**(-t)
+    #Alternative: return 1/(1+r)**t
+
+def pv(l, r):
+    """
+    Compute the present value of a list of liabilities given by the time (as an index) and amounts
+    """
+    dates = l.index
+    discounts = discount(dates, r)
+    return (discounts*l).sum()
+
+def funding_ratio(assets, liabilities, r):
+    """
+    Computes the funding ratio of a series of liabilities, based on an interest rate and current value of assets
+    """
+    return assets/pv(liabilities, r)
